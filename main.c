@@ -25,19 +25,20 @@
 
 #define dimension 10
 
-#define S       50
-#define Sr      S/2
-#define ss      0.6
-#define N_ed    3
-#define N_re    6
-#define N_ch    20
-#define N_sl    4
-#define p_ed    0.25
-#define d_attr  0.1
-#define w_attr  0.2
-#define h_rep   d_attr
-#define w_rep   10.0
+#define S       50      /* population size */
+#define Sr      S/2     /* number to split */
+#define ss      0.6     /* step size */
+#define N_ed    3       /* number of elimination-dispersal events */
+#define N_re    6       /* number of reproduction steps */
+#define N_ch    20      /* number of chemotactic steps */
+#define N_sl    4       /* swim length */
+#define p_ed    0.25    /* eliminate probability */
+#define d_attr  0.1     /* depth of the attractant */
+#define w_attr  0.2     /* width of the attractant signal */
+#define h_rep   d_attr  /* height of the repellant effect */
+#define w_rep   10.0    /* width of the repellant */
 
+/* bacterium */
 typedef struct Cell
 {
     double vect[dimension];
@@ -253,11 +254,11 @@ void chemotaxis()
 void optimization()
 {
     int l, k, j;
-    for(l = 0; l < N_ed; l++)
+    for(l = 0; l < N_ed; l++)           /* Elimination-dispersal loop */
     {
-        for(k = 0; k < N_re; k++)
+        for(k = 0; k < N_re; k++)       /* Reproduction loop */
         {
-            for(j = 0; j < N_ch; j++)
+            for(j = 0; j < N_ch; j++)   /* Chemotaxis loop */
             {
                 chemotaxis();
                 printf("best=%e , fe_count=%d\n", best, fe_count);
