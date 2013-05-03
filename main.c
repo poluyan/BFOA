@@ -41,39 +41,58 @@
 /* bacterium */
 typedef struct Cell
 {
-    double vect[dimension];
-    double cost;
-    double fitness;
-    double health;
-    double step_size;
+    double vect[dimension];     /* position in search space */
+    double cost;                /* objective function value */
+    double fitness;             /* cost value and attractant and repellent effects */
+    double health;              /* the health of bacterium */
+    double step_size;           /* step in the search area */
 } Cell;
 
-Cell population[S];
+Cell population[S];             /* population of bacteria */
 
-double space[dimension][2];
-double rand_vect[dimension];
-double delta[dimension];
+double space[dimension][2];     /* the boundaries of the search space */
+double rand_vect[dimension];    /* direction of movement after a tumble */
+double delta[dimension];        /* used in the normalization of the rand_vect */
 
-double best = INF;
-int fe_count = 0;
-
+double best = INF;              /* the best solution found during the search */
+int fe_count = 0;               /* number of objective function evaluations */
 
 /* functions */
+
+/* compute objective function */
 void objective_function(Cell *x);
+
+/* compute cell-to-cell attraction and repelling effects */
 void interaction(Cell *x);
 
+/* generate random number from a to b */
 double random_number(double a, double b);
+
+/* set the bounds values for search space */
 void initialize_space(double a, double b);
+
+/* distribute the population within the search space */
 void initialize_population();
 
+/* tumble current_cell, one step in a random direction */
 void tumble_step(Cell *new_cell, Cell *current_cell);
+
+/* swim step of current_cell in a rand_vect direction */
 void swim_step(Cell *new_cell, Cell *current_cell);
 
+/* function that compares two Cell objects by health value */
 int compare(struct Cell *left, struct Cell *right);
 
+/* tumble and swim each member in the population */
 void chemotaxis();
+
+/* split the bacteria */
 void reproduction();
+
+/* elimination and dispersal event */
 void elimination_dispersal();
+
+/* run an algorithm */
 void optimization();
 
 int main()
@@ -83,8 +102,11 @@ int main()
     printf("Bacterial Foraging Optimization Algorithm\n");
     printf("Dimension: %d\n", dimension);
 
+    /* search space [-100, 100]^dimension */
     initialize_space(-100.0, 100.0);
+    /* random initialization within the search space */
     initialize_population();
+    /* minimization of objective function */
     optimization();
 
     return 0;
@@ -127,6 +149,7 @@ int compare(struct Cell *left, struct Cell *right)
 }
 void initialize_population()
 {
+    /* randomly distribute the initial population */
     int i, j;
     for(i = 0; i < S; i++)
     {
@@ -145,6 +168,7 @@ void elimination_dispersal()
     int i, j;
     for(i = 0; i < S; i++)
     {
+        /* simply disperse bacterium to a random location on the search space */
         if(random_number(0.0,1.0) < p_ed)
         {
             for(j = 0; j < dimension; j++)
@@ -157,8 +181,10 @@ void elimination_dispersal()
 }
 void reproduction()
 {
+    /* sort the population in order of increasing health value */
     qsort(population, S, sizeof(Cell), (int(*)(const void*,const void*))compare);
     int i, j;
+    /* Sr healthiest bacteria split into two bacteria, which are placed at the same location */
     for(i = S-Sr, j = 0; j < Sr; i++, j++)
     {
         population[i] = population[j];
@@ -182,6 +208,7 @@ void interaction(Cell *x)
         attract += -1.0*d_attr*exp(-1.0*w_attr*diff);
         repel += h_rep*exp(-1.0*w_rep*diff);
     }
+    /* this produces the swarming effect */
     x->fitness = x->cost + attract + repel;
 }
 void tumble_step(Cell *new_cell, Cell *current_cell)
@@ -198,6 +225,7 @@ void tumble_step(Cell *new_cell, Cell *current_cell)
     {
         rand_vect[i] = delta[i]/temp2;
         new_cell->vect[i] = current_cell->vect[i] + current_cell->step_size*rand_vect[i];
+        /* there is no need to perform search outside of the given bounds */
         if(new_cell->vect[i] < space[i][0])
             new_cell->vect[i] = space[i][0];
         if(new_cell->vect[i] > space[i][1])
@@ -210,6 +238,7 @@ void swim_step(Cell *new_cell, Cell *current_cell)
     for(i = 0; i < dimension; i++)
     {
         new_cell->vect[i] = new_cell->vect[i] + current_cell->step_size*rand_vect[i];
+        /* there is no need to perform search outside of the given bounds */
         if(new_cell->vect[i] < space[i][0])
             new_cell->vect[i] = space[i][0];
         if(new_cell->vect[i] > space[i][1])
